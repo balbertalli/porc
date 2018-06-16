@@ -41,7 +41,7 @@
 
 # Python libs
 import textwrap
-from librosa.core import load
+import wave
 from contextlib import closing
 import struct
 
@@ -50,6 +50,7 @@ import numpy as np
 import scipy as sp
 import scipy.signal as sig
 from scipy.fftpack import ifft, fft
+from scipy.io import wavfile
 from scipy.signal import convolve as conv
 from scipy.stats import kurtosis
 from scipy.stats import norm as Gaussian
@@ -105,7 +106,7 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
     print "Loading impulse response"
 
     # Read impulse response
-    data, Fs = load(impresp)
+    Fs, data = wavfile.read(impresp)
     data = norm(np.hstack(data))
 
     if trim:
@@ -304,7 +305,7 @@ def wavwrite_24(fname, fs, data):
 
 
 def wavwrite_32(fname, fs, data):
-    data_as_bytes = (struct.pack('<i', int(samp*(2**31-1))) for samp in data)
+    data_as_bytes = (struct.pack('<i', int(samp * (2**31 - 1))) for samp in data)
     with closing(wave.open(fname, 'wb')) as wavwriter:
         wavwriter.setnchannels(1)
         wavwriter.setsampwidth(4)

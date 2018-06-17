@@ -75,12 +75,12 @@ def rceps(x):
     return (y, ym)
 
 
-def parfilt(Bm, Am, FIR, x):
+def parfilt(bm, am, fir, x):
     """Parallel filter design."""
     y = np.zeros(x.size)
-    for k in range(Am.shape[1]):
-        y += np.ravel(sig.lfilter(Bm[:, k], Am[:, k], x))
-    y += np.ravel(sig.lfilter(np.hstack([FIR]), np.hstack([1]), x))
+    for k in range(am.shape[1]):
+        y += np.ravel(sig.lfilter(bm[:, k], am[:, k], x))
+    y += np.ravel(sig.lfilter(np.hstack([fir]), np.hstack([1]), x))
     return y
 
 
@@ -224,9 +224,9 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
             h = hp[:taps][::-1]
             # create all pass filter
             phase = np.unwrap(np.angle(h))
-            H = np.exp(1j * phase)
+            h = np.exp(1j * phase)
             # convert from db to linear
-            mixed = np.power(10, np.real(H) / 20.0)
+            mixed = np.power(10, np.real(h) / 20.0)
             # create filter's impulse response
             mixed = np.real(ifft(mixed))
 

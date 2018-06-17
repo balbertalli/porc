@@ -41,9 +41,6 @@
 
 # Python libs
 import textwrap
-import wave
-from contextlib import closing
-import struct
 
 # Scipy, Numpy, and matplotlibs
 import numpy as np
@@ -53,7 +50,7 @@ from scipy.fftpack import ifft, fft
 from scipy.io import wavfile
 from scipy.signal import convolve as conv
 from scipy.stats import kurtosis
-from scipy.stats import norm as Gaussian
+from scipy.stats import norm as gaussian
 import matplotlib.pyplot as plt
 
 # PORC source files
@@ -63,13 +60,11 @@ from freqpoles import freqpoles
 
 import soundfile as sf
 
-# Ignore warnings
-# import warnings; warnings.filterwarnings('ignore')
-
 # MiniDSP's OpenDRC box likes 6144 taps
 
 
 def rceps(x):
+    """Make the measured response minumum-phase."""
     y = sp.real(ifft(sp.log(sp.absolute(fft(x)))))
     n = len(x)
     if (n % 2) == 1:
@@ -81,6 +76,7 @@ def rceps(x):
 
 
 def parfilt(Bm, Am, FIR, x):
+    """Parallel filter design."""
     y = np.zeros(x.size)
     for k in range(Am.shape[1]):
         y += np.ravel(sig.lfilter(Bm[:, k], Am[:, k], x))
@@ -88,23 +84,31 @@ def parfilt(Bm, Am, FIR, x):
     return y
 
 
-# Normalize signal
 def norm(y):
+    """Normalize signal."""
     return y / np.fabs(y).max()
 
 
 def db_to_mag(db):
+    """Convert magnitude to decibels."""
     return 10**((db) / 20.)
 
 
-# The Median Absolute Deviation along given axis of an array
-# From statsmodels lib
-def mad(a, c=Gaussian.ppf(3 / 4.), axis=0):  # c \approx .6745
+def mad(a, c=gaussian.ppf(3 / 4.), axis=0):  # c \approx .6745
+    """Median Absolute Deviation along given axis of an array.
+
+    From statsmodels lib.
+    c ~= .6745
+    """
     a = np.asarray(a)
     return np.median((np.fabs(a)) / c, axis=axis)
 
 
 def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthresh, noplot):
+    """Primary function.
+
+    Determine a room compensation impulse response from a measured room impulse response.
+    """
     print("Loading impulse response")
 
     # Read impulse response
@@ -296,13 +300,16 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
 
 
 def wavwrite(fname, fs, data, wav_format, subtype):
+    """Save compensated impulse response as a wav or raw file."""
     sf.write(fname, data, fs, subtype=subtype, format=wav_format)
 
 
 def main():
+    """Main function.
 
+    Parse commmand line arguments and call roomcomp to determine the compensated impulse response.
+    """
     print()
-
     mtxt = textwrap.dedent('''\
     Python Open Room Correction (PORC), version 0.1
     Copyright (c) 2012 Mason A. Green

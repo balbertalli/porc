@@ -1,4 +1,5 @@
 # FREQPOLES - Pole set generation for the PARFILTDES function.
+#
 #   [P]=freqpoles(FR,Fs) creates poles from the given frequency vector
 #   FR with sampling frequency Fs such that the frequency responses
 #   of the second-order basis functions cross approximatelly at their

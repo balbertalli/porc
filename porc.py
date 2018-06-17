@@ -125,6 +125,11 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
 
     print("\nGenerating correction filter")
 
+    # Number of taps
+
+    if not ntaps:
+        ntaps = len(data)
+
     # Logarithmic pole positioning
 
     fplog = np.hstack((sp.logspace(sp.log10(20.), sp.log10(200.), 14.), sp.logspace(sp.log10(250.),
@@ -323,8 +328,8 @@ def main():
     # Options
     parser.add_argument("-t", dest="target", default='flat',
                         help="target curve", metavar="FILE")
-    parser.add_argument("-n", dest="ntaps", default=6144,
-                        help="filter length, in taps. Default = len(input)", type=int)
+    parser.add_argument("-n", dest="ntaps",
+                        help="filter length, in taps. Default = len(impresp)", type=int)
     parser.add_argument('--mixed', action='store_true', default=False,
                         help="Implement mixed-phase compensation. see README for details")
     parser.add_argument("-o", dest="opformat", default='bin',

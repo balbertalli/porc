@@ -130,7 +130,7 @@ def tfplot(data, Fs = 44100, color = 'b', octbin = 100, avg = 'comp'):
 	hann = sp.hanning(WL*2)
 	endwin = hann[WL:2*WL]
 	tf = fft(data*endwin, FFTSIZE)
-	compamp = tf[:FFTSIZE/2]
+	compamp = tf[:int(FFTSIZE / 2)]
 
 	logmagn = np.empty(LOGN)
 	fstep = Fs/np.float64(FFTSIZE)

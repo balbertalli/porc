@@ -1,2 +1,5 @@
 venv
 *.pyc
+impulses
+*.bak
+*.wav

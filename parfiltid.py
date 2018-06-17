@@ -1,15 +1,15 @@
 # Python Open Room Correction (PORC)
-# Copyright (c) 2012 Mason A. Green
+# Copyright (c) 2012 mason A. Green
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met: 
+# modification, are permitted provided that the following conditions are met:
 #
 # 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer. 
+#    list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution. 
+#    and/or other materials provided with the distribution.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -24,127 +24,126 @@
 #
 # PARFILTID - System identification in the form of second-order parallel filters for a given
 # pole set.
-#   [Bm,Am,FIRcoeff]=parfiltid(INPUT,OUTPUT,P,NFIR); identifies the second-order sections
-#   [Bm,Am] and the coefficients of the FIR part (FIRcoeff) for a given
-#   pole set P. The parameters are set such that, when the INPUT signal is 
-#   filtered by the parallel filter, it gives an output which is the closest
-#   to the OUTPUT vector in the LS sense. The number of taps in the parallel
-#   FIR filter is set by NFIR. The default is NFIR=1, in this case FIRcoeff 
-#   is a simple gain. The only difference from the PARFILTDES function is that
-#   now the input can be arbitrary, and not just a unit pulse as for filter design.
 #
-#   The Bm and Am matrices are containing the [b0 b1]' and [1 a0 a1]'
-#   coefficients for the different sections in their columns. For example,
-#   Bm(:,3) gives the [b0 b1]' parameters of the third second-order
-#   section. These can be used by the filter command separatelly (e.g., by
-#   y=filter(Bm(:,3),Am(:,3),x), or by the PARFILT command.
+# [Bm,Am,FIRcoeff]=parfiltid(INPUT,OUTPUT,P,nfir); identifies the second-order sections
+# [Bm,Am] and the coefficients of the FIR part (FIRcoeff) for a given
+# pole set P. The parameters are set such that, when the INPUT signal is
+# filtered by the parallel filter, it gives an output which is the closest
+# to the OUTPUT vector in the lS sense. The number of taps in the parallel
+# FIR filter is set by nfir. The default is nfir=1, in this case FIRcoeff
+# is a simple gain. The only difference from the PARFIlTDES function is that
+# now the input can be arbitrary, and not just a unit pulse as for filter design.
 #
-#   Note that this function does not support pole multiplicity, so P should
-#   contain each pole only once.
+# The Bm and Am matrices are containing the [b0 b1]' and [1 a0 a1]'
+# coefficients for the different sections in their columns. For example,
+# Bm(:,3) gives the [b0 b1]' parameters of the third second-order
+# section. These can be used by the filter command separatelly (e.g., by
+# y=filter(Bm(:,3),Am(:,3),x), or by the PARFIlT command.
 #
-#   More details about the parallel filter can be found in the papers
+# Note that this function does not support pole multiplicity, so P should
+# contain each pole only once.
 #
-#	Balazs Bank, "Perceptually Motivated Audio Equalization Using Fixed-Pole Parallel
-#   Second-Order Filters", IEEE Signal Processing Letters, 2008.
-#   http://www.acoustics.hut.fi/go/spl08-parfilt
+# more details about the parallel filter can be found in the papers
 #
-#   Balazs Bank, "Direct Design of Parallel Second-order Filters for
-#   Instrument Body Modeling", International Computer Music Conference,
-#   Copenhagen, Denmark, Aug. 2007.
-#   http://www.acoustics.hut.fi/go/icmc07-parfilt
+# Balazs Bank, "Perceptually motivated Audio Equalization Using Fixed-Pole Parallel
+# Second-Order Filters", IEEE Signal Processing letters, 2008.
+# http://www.acoustics.hut.fi/go/spl08-parfilt
 #
-#   C. Balazs Bank, Helsinki University of Technology, 2007.
+# Balazs Bank, "Direct Design of Parallel Second-order Filters for
+# Instrument Body modeling", International Computer music Conference,
+# Copenhagen, Denmark, Aug. 2007.
+# http://www.acoustics.hut.fi/go/icmc07-parfilt
+# C. Balazs Bank, Helsinki University of Technology, 2007.
 
 import numpy as np
-import scipy as sp
 import scipy.signal as sig
 
-def parfiltid(input, out, p, NFIR = 1):
-	
-	# We don't want to have any poles in the origin; For that we have the parallel FIR part.
-	# Remove nonzeros
-	p = p[p.nonzero()] 
 
-	# making the filter stable by flipping the poles into the unit circle
-	for k in range(p.size): 
-		if abs(p[k]) > 1:	
-			p[k] = 1.0/np.conj(p[k])
+def parfiltid(input, out, p, nfir=1):
+    """Parallel filter design."""
+    # We don't want to have any poles in the origin; For that we have the parallel FIR part.
+    # Remove nonzeros
+    p = p[p.nonzero()]
 
-	# Order it to complex pole pairs + real ones afterwards
-	p = np.sort_complex(p)
-	
-	# in order to have second-order sections only (i.e., no first order)
-	pnum = len(p) # number of poles
-	ppnum = 2 * np.floor(pnum/2) # the even part of pnum
-	ODD = 0
+    # making the filter stable by flipping the poles into the unit circle
+    for k in range(p.size):
+        if abs(p[k]) > 1:
+            p[k] = 1.0 / np.conj(p[k])
 
-	#if pnum is odd
-	if pnum > ppnum: 
-		ODD = 1
-		
-	OUTL = len(out)
-	INL = len(input)
+    # Order it to complex pole pairs + real ones afterwards
+    p = np.sort_complex(p)
 
-	# making input the same length as the output
+    # in order to have second-order sections only (i.e., no first order)
+    pnum = len(p)  # number of poles
+    ppnum = 2 * np.floor(pnum / 2)  # the even part of pnum
+    odd = 0
 
-	if INL > OUTL:
-	   input = input[:OUTL]
+    # if pnum is odd
+    if pnum > ppnum:
+        odd = 1
 
-	if INL < OUTL:
-	   input = np.hstack([input, np.zeros(OUTL - INL, dtype=np.float64)])
+    outl = len(out)
+    inl = len(input)
 
-	L = OUTL
+    # making input the same length as the output
 
-	# Allocate memory
-	M = np.zeros((input.size, p.size + NFIR), dtype=np.float64)
+    if inl > outl:
+        input = input[:outl]
 
-	# constructing the modeling signal matrix	
-	for k in range(0, int(ppnum), 2): #second-order sections
-		#impluse response of the two-pole filter
-		resp = sig.lfilter(np.array([1]), np.poly(p[k:k+2]), input)
-		M[:,k] = resp
-		#the response delayed by one sample
-		M[:,k+1] = np.hstack((0., resp[:L-1])) 
+    if inl < outl:
+        input = np.hstack([input, np.zeros(outl - inl, dtype=np.float64)])
 
-	
-	# if the number of poles is odd, we have a first-order section
-	if ODD: 
-		resp = sig.lfilter(np.array([1]), np.poly(p[-1]),input)
-		M[:,pnum-1] = resp
+    l = outl
 
-	# parallel FIR part
-	for k in range(0, NFIR):
-		M[:,pnum+k] = np.hstack([np.zeros(k, dtype=np.float64), input[:L-k+1]])
-	
-	y = out
-	# Looking for min(||y-M*par||) as a function of par:
-	# least squares solution by equation solving 
-	mconj = M.conj().T
-	A = np.dot(mconj, M)
-	b = np.dot(mconj, y)	
-	par = np.linalg.solve(A, b)
+    # Allocate memory
+    m = np.zeros((input.size, p.size + nfir), dtype=np.float64)
 
-	#print (np.dot(A, par) == b).all()
+    # constructing the modeling signal matrix
+    for k in range(0, int(ppnum), 2):  # second-order sections
+        # impluse response of the two-pole filter
+        resp = sig.lfilter(np.array([1]), np.poly(p[k:k + 2]), input)
+        m[:, k] = resp
+        # the response delayed by one sample
+        m[:, k + 1] = np.hstack((0., resp[:l - 1]))
 
-	# Allocate memory
-	size = int(np.ceil(ppnum/2))
-	Am = np.zeros((3, size), dtype=np.float64)
-	Bm = np.zeros((2, size), dtype=np.float64)
+    # if the number of poles is odd, we have a first-order section
+    if odd:
+        resp = sig.lfilter(np.array([1]), np.poly(p[-1]), input)
+        m[:, pnum - 1] = resp
 
-	# constructing the Bm and Am matrices
-	for k in range(0, size):
-		Am[:,k] = np.poly(p[2*k:2*k+2]) 
-		Bm[:,k] = np.hstack(par[2*k:2*k+2])
+    # parallel FIR part
+    for k in range(0, nfir):
+        m[:, pnum + k] = np.hstack([np.zeros(k, dtype=np.float64), input[:l - k + 1]])
 
-	# we extend the first-order section to a second-order one by adding zero coefficients
-	if ODD:
-		Am = np.append(Am, np.vstack(np.hstack([np.poly(p[pnum]),0.])), 1)
-		Bm = np.append(Bm, np.vstack([par[pnum], 0.]), 1)
+    y = out
+    # looking for min(||y-m*par||) as a function of par:
+    # least squares solution by equation solving
+    mconj = m.conj().T
+    a = np.dot(mconj, m)
+    b = np.dot(mconj, y)
+    par = np.linalg.solve(a, b)
 
-	FIR = []
+    # print (np.dot(a, par) == b).all()
 
-	# constructing the FIR part
-	if NFIR > 0:
-		FIR = np.hstack(par[pnum:pnum+NFIR])
-	
-	return Bm, Am, FIR
+    # allocate memory
+    size = int(np.ceil(ppnum / 2))
+    am = np.zeros((3, size), dtype=np.float64)
+    bm = np.zeros((2, size), dtype=np.float64)
+
+    # constructing the bm and am matrices
+    for k in range(0, size):
+        am[:, k] = np.poly(p[2 * k:2 * k + 2])
+        bm[:, k] = np.hstack(par[2 * k:2 * k + 2])
+
+    # we extend the first-order section to a second-order one by adding zero coefficients
+    if odd:
+        am = np.append(am, np.vstack(np.hstack([np.poly(p[pnum]), 0.])), 1)
+        bm = np.append(bm, np.vstack([par[pnum], 0.]), 1)
+
+    fir = []
+
+    # constructing the fir part
+    if nfir > 0:
+        fir = np.hstack(par[pnum:pnum + nfir])
+
+    return bm, am, fir

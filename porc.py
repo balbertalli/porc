@@ -337,15 +337,17 @@ def main():
     parser.add_argument("-n", dest="ntaps",
                         help="filter length, in taps. Default = len(impresp)", type=int)
     parser.add_argument('--mixed', action='store_true', default=False,
-                        help="Implement mixed-phase compensation. see README for details")
+                        help="""Implement mixed-phase compensation. Must use --trim option or
+                        manually remove leading silence. see README for details""")
     parser.add_argument("-o", dest="opformat", default='bin',
                         help="Output file type, default bin optional wav", type=str)
     parser.add_argument("-s", dest="nsthresh", default=0.005,
-                        help="Normalized silence threshold. Default = 0.05", type=float)
+                        help="""Normalized silence threshold. Default = 0.005.
+                        Only used when --trim option is also set.""", type=float)
     parser.add_argument('--trim', action='store_true', default=False,
                         help="Trim leading silence")
     parser.add_argument('--noplot', action='store_true', default=False,
-                        help="Do not polt the filter")
+                        help="Do not plot the filter")
 
     args = parser.parse_args()
 

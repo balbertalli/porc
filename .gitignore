@@ -3,3 +3,4 @@ venv
 impulses
 *.bak
 *.wav
+main.py

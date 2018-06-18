@@ -164,7 +164,7 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
         pwr = t[:, 1]
 
         # calculate the FIR filter via windowing method
-        fir = sig.firwin2(501, frq, np.power(10, pwr / 20.0), nyq=frq[-1])
+        fir = sig.firwin2(5001, frq, np.power(10, pwr / 20.0), fs=(frq[-1] * 2))
         # Minimum phase, zero padding
         cp, outf = rceps(np.append(fir, np.zeros(len(minresp) - len(fir))))
 
@@ -341,8 +341,8 @@ def main():
                         manually remove leading silence. see README for details""")
     parser.add_argument("-o", dest="opformat", default='bin',
                         help="Output file type, default bin optional wav", type=str)
-    parser.add_argument("-s", dest="nsthresh", default=0.005,
-                        help="""Normalized silence threshold. Default = 0.005.
+    parser.add_argument("-s", dest="nsthresh", default=0.05,
+                        help="""Normalized silence threshold. Default = 0.05.
                         Only used when --trim option is also set.""", type=float)
     parser.add_argument('--trim', action='store_true', default=False,
                         help="Trim leading silence")

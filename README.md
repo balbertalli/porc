@@ -1,6 +1,11 @@
 Python Open Room Correction (PORC)
 ==================================
 
+This fork updates PORC to run on Python 3, adds a requirements.txt file for easy dependency installation, and cleans up a bit of duplicated code.
+The functionality has not been changed. 
+It's just a little easier to setup circa 2018.
+All credit is due to Mason A. Green and Dr. Bank.
+
 PORC now includes mixed-phase compensation (see below)!
 
 DSP Loudspeaker-Room correction filter wizard; transfer function modeling and equalization 

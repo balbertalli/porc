@@ -71,27 +71,10 @@ def fftfilt(b, x):
     return np.real(y)
 
 
-# def plot(data, fs=41000, color='b', fract=3):
-#     octbin = 100
-#     fftsize = 2**18
-#     logfact = 2**(1. / octbin)
-#     logn = np.floor(np.log(fs / 2) / np.log(logfact))
-#      # logarithmic scale from 1 Hz to fs/2
-#     logscale = np.power(logfact, np.r_[:logn])
-
-#     # creating a half hanning window
-#     wl = data.size
-#     hann = sp.hanning(wl * 2)
-#     endwin = hann[wl:2 * wl]
-#     tf = fft(data * endwin, fftsize)
-
-
-
-def tfplots(data, fs=44100, color='b', fract=3):
-    """Transfer function plots."""
-    octbin = 100.
+def plot(data, fs=41000, color='b', fract=3, avg='comp', plots=False):
+    """Plotting routine."""
+    octbin = 100
     fftsize = 2**18
-
     logfact = 2**(1. / octbin)
     logn = np.floor(np.log(fs / 2) / np.log(logfact))
     # logarithmic scale from 1 Hz to fs/2
@@ -102,11 +85,9 @@ def tfplots(data, fs=44100, color='b', fract=3):
     hann = sp.hanning(wl * 2)
     endwin = hann[wl:2 * wl]
     tf = fft(data * endwin, fftsize)
-
     magn = np.abs(tf[:int(fftsize / 2)])
-    # compamp = tf[:fftsize / 2]
-
-    # creating 100th octave resolution log. spaced data from the lin. spaced FFT data
+    if plot:
+        compamp = tf[:int(fftsize / 2)]
     logmagn = np.empty(int(logn))
     fstep = fs / np.float64(fftsize)
 
@@ -114,77 +95,39 @@ def tfplots(data, fs=44100, color='b', fract=3):
         start = int(np.round(logscale[k] / np.sqrt(logfact) / fstep))
         start = int(np.maximum(start, 1))
         start = int(np.minimum(start, fftsize / 2))
-        stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep))
-        stop = int(np.maximum(stop, 1))
-        stop = int(np.minimum(stop, fftsize / 2))
-        # averaging the power
-        logmagn[k] = np.sqrt(np.mean(np.power(magn[start - 1:stop], 2)))
-
-    # creating hanning window
-    # fractional octave smoothing
-    hl = int(2 * np.round(octbin / fract))
-    hh = sp.hanning(hl)
-
-    l = logmagn.size
-    logmagn[l - 1:l + hl] = 0
-
-    # Smoothing the log. spaced data by convonvling with the hanning window
-    tmp = fftfilt(hh, np.power(logmagn, 2))
-    smoothmagn = np.sqrt(tmp[int(hl / 2):int(hl / 2 + l)] / hh.sum(axis=0))
-
-    # plotting
-    plt.semilogx(logscale, 20 * np.log10(smoothmagn), color)
-
-
-def tfplot(data, fs=44100, color='b', octbin=100., avg='comp'):
-    """Transfer function plot."""
-    fftsize = 2**18
-
-    logfact = 2**(1. / octbin)
-    logn = np.floor(np.log(fs / 2) / np.log(logfact))
-    # logarithmic scale from 1 Hz to fs/2
-    logscale = np.power(logfact, np.r_[:logn])
-
-    # creating a half hanning window
-    wl = data.size
-    hann = sp.hanning(wl * 2)
-    endwin = hann[wl:2 * wl]
-    tf = fft(data * endwin, fftsize)
-    compamp = tf[:int(fftsize / 2)]
-    logmagn = np.empty(int(logn))
-    fstep = fs / np.float64(fftsize)
-
-    for k in range(logscale.size):
-
-        # finding the start and end positions of the logaritmic bin
-        start = int(np.round(logscale[k] / np.sqrt(logfact) / fstep))
-        start = int(np.maximum(start, 1))
-        start = int(np.minimum(start, fftsize / 2))
-        stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep) - 1)
-        stop = int(np.maximum(stop, start))
+        if plots:
+            stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep) - 1)
+            stop = int(np.maximum(stop, start))
+        else:
+            stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep))
         stop = int(np.maximum(stop, 1))
         stop = int(np.minimum(stop, fftsize / 2))
 
-        # averaging the complex transfer function
-        if avg is 'comp':
-            logmagn[k] = np.abs(np.mean(compamp[start - 1:stop]))
-        elif avg is 'abs':
-            logmagn[k] = np.mean(np.abs(compamp[start - 1:stop]))
-        elif avg is 'power':
-            logmagn[k] = np.sqrt(np.mean(np.abs(np.power(compamp[start - 1:stop], 2))))
+        if plots:
+            logmagn[k] = np.sqrt(np.mean(np.power(magn[start - 1:stop], 2)))
+        else:
+            # averaging the complex transfer function
+            if avg is 'comp':
+                logmagn[k] = np.abs(np.mean(compamp[start - 1:stop]))
+            elif avg is 'abs':
+                logmagn[k] = np.mean(np.abs(compamp[start - 1:stop]))
+            elif avg is 'power':
+                logmagn[k] = np.sqrt(np.mean(np.abs(np.power(compamp[start - 1:stop], 2))))
 
-    # plotting
-    plt.semilogx(logscale, 20 * np.log10(logmagn), color)
+    if plots:
+        # creating hanning window
+        # fractional octave smoothing
+        hl = int(2 * np.round(octbin / fract))
+        hh = sp.hanning(hl)
 
+        l = logmagn.size
+        logmagn[l - 1:l + hl] = 0
 
-def debug_log_plot(x, y):
-    """Debugging helper."""
-    fig = plt.figure()
-    plt.title("Digital filter frequency response")
-    ax = fig.add_subplot(111)
-    plt.semilogx(x, y, 'b')
-    plt.ylabel('Amplitude (power)', color='b')
-    plt.xlabel('Frequency (rad/sample)')
-    plt.grid()
-    plt.legend()
-    plt.show()
+        # Smoothing the log. spaced data by convonvling with the hanning window
+        tmp = fftfilt(hh, np.power(logmagn, 2))
+        smoothmagn = np.sqrt(tmp[int(hl / 2):int(hl / 2 + l)] / hh.sum(axis=0))
+
+        plt.semilogx(logscale, 20 * np.log10(smoothmagn), color)
+
+    else:
+        plt.semilogx(logscale, 20 * np.log10(logmagn), color)

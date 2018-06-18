@@ -55,7 +55,7 @@ import matplotlib.pyplot as plt
 
 # PORC source files
 from parfiltid import parfiltid
-from tfplot import tfplot, tfplots
+from tfplot import plot
 from freqpoles import freqpoles
 
 import soundfile as sf
@@ -268,19 +268,19 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
     if not noplot:
         data *= 500
         # original loudspeaker-room response
-        tfplot(data, Fs, avg='abs')
+        plot(data, fs=Fs, avg='abs')
         # 1/3 Octave smoothed
-        tfplots(data, Fs, 'r')
+        plot(data, fs=Fs, color='r', plots=True)
 
         # equalizer transfer function
-        tfplot(0.75 * equalizer, Fs, 'g')
+        plot(0.75 * equalizer, fs=Fs, color='g')
         # indicating pole frequencies
         plt.vlines(fplog, -2, 2, color='k', linestyles='solid')
 
         # equalized loudspeaker-room response
-        tfplot(equalizedresp * 0.01, Fs, avg='abs')
+        plot(equalizedresp * 0.01, fs=Fs, avg='abs')
         # 1/3 Octave smoothed
-        tfplots(equalizedresp * 0.01, Fs, 'r')
+        plot(equalizedresp * 0.01, fs=Fs, color='r', plots=True)
 
         # Add labels
         # May need to reposition these based on input data

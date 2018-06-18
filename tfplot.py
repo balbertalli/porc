@@ -65,10 +65,26 @@ def fftfilt(b, x):
     # length (b) - 1 as number of points ...
     c_x = x.size
     c_b = b.size
-    n = np.power(2, np.ceil(np.log(c_x + c_b) / np.log(2)), dtype=np.float32)
+    n = int(np.power(2, np.ceil(np.log(c_x + c_b) / np.log(2)), dtype=np.float32))
     y = ifft(fft(x, n) * fft(b, n))
     # Final cleanups: Both x and b are real; y should also be
     return np.real(y)
+
+
+# def plot(data, fs=41000, color='b', fract=3):
+#     octbin = 100
+#     fftsize = 2**18
+#     logfact = 2**(1. / octbin)
+#     logn = np.floor(np.log(fs / 2) / np.log(logfact))
+#      # logarithmic scale from 1 Hz to fs/2
+#     logscale = np.power(logfact, np.r_[:logn])
+
+#     # creating a half hanning window
+#     wl = data.size
+#     hann = sp.hanning(wl * 2)
+#     endwin = hann[wl:2 * wl]
+#     tf = fft(data * endwin, fftsize)
+
 
 
 def tfplots(data, fs=44100, color='b', fract=3):
@@ -87,26 +103,26 @@ def tfplots(data, fs=44100, color='b', fract=3):
     endwin = hann[wl:2 * wl]
     tf = fft(data * endwin, fftsize)
 
-    magn = np.abs(tf[:fftsize / 2])
+    magn = np.abs(tf[:int(fftsize / 2)])
     # compamp = tf[:fftsize / 2]
 
     # creating 100th octave resolution log. spaced data from the lin. spaced FFT data
-    logmagn = np.empty(logn)
+    logmagn = np.empty(int(logn))
     fstep = fs / np.float64(fftsize)
 
     for k in range(logscale.size):
-        start = np.round(logscale[k] / np.sqrt(logfact) / fstep)
-        start = np.maximum(start, 1)
-        start = np.minimum(start, fftsize / 2)
-        stop = np.round(logscale[k] * np.sqrt(logfact) / fstep)
-        stop = np.maximum(stop, 1)
-        stop = np.minimum(stop, fftsize / 2)
+        start = int(np.round(logscale[k] / np.sqrt(logfact) / fstep))
+        start = int(np.maximum(start, 1))
+        start = int(np.minimum(start, fftsize / 2))
+        stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep))
+        stop = int(np.maximum(stop, 1))
+        stop = int(np.minimum(stop, fftsize / 2))
         # averaging the power
         logmagn[k] = np.sqrt(np.mean(np.power(magn[start - 1:stop], 2)))
 
     # creating hanning window
     # fractional octave smoothing
-    hl = 2 * np.round(octbin / fract)
+    hl = int(2 * np.round(octbin / fract))
     hh = sp.hanning(hl)
 
     l = logmagn.size
@@ -114,13 +130,13 @@ def tfplots(data, fs=44100, color='b', fract=3):
 
     # Smoothing the log. spaced data by convonvling with the hanning window
     tmp = fftfilt(hh, np.power(logmagn, 2))
-    smoothmagn = np.sqrt(tmp[hl / 2:hl / 2 + l] / hh.sum(axis=0))
+    smoothmagn = np.sqrt(tmp[int(hl / 2):int(hl / 2 + l)] / hh.sum(axis=0))
 
     # plotting
     plt.semilogx(logscale, 20 * np.log10(smoothmagn), color)
 
 
-def tfplot(data, fs=44100, color='b', octbin=100, avg='comp'):
+def tfplot(data, fs=44100, color='b', octbin=100., avg='comp'):
     """Transfer function plot."""
     fftsize = 2**18
 
@@ -135,20 +151,19 @@ def tfplot(data, fs=44100, color='b', octbin=100, avg='comp'):
     endwin = hann[wl:2 * wl]
     tf = fft(data * endwin, fftsize)
     compamp = tf[:int(fftsize / 2)]
-
-    logmagn = np.empty(logn)
+    logmagn = np.empty(int(logn))
     fstep = fs / np.float64(fftsize)
 
     for k in range(logscale.size):
 
         # finding the start and end positions of the logaritmic bin
-        start = np.round(logscale[k] / np.sqrt(logfact) / fstep)
-        start = np.maximum(start, 1)
-        start = np.minimum(start, fftsize / 2)
-        stop = np.round(logscale[k] * np.sqrt(logfact) / fstep) - 1
-        stop = np.maximum(stop, start)
-        stop = np.maximum(stop, 1)
-        stop = np.minimum(stop, fftsize / 2)
+        start = int(np.round(logscale[k] / np.sqrt(logfact) / fstep))
+        start = int(np.maximum(start, 1))
+        start = int(np.minimum(start, fftsize / 2))
+        stop = int(np.round(logscale[k] * np.sqrt(logfact) / fstep) - 1)
+        stop = int(np.maximum(stop, start))
+        stop = int(np.maximum(stop, 1))
+        stop = int(np.minimum(stop, fftsize / 2))
 
         # averaging the complex transfer function
         if avg is 'comp':

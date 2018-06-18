@@ -295,7 +295,6 @@ def roomcomp(impresp, filter, target, ntaps, mixed_phase, opformat, trim, nsthre
         plt.ylabel('Amplitude (dB)', color='b')
         plt.xlabel('Frequency (Hz)')
         plt.grid()
-        plt.legend()
         plt.show()
 
 

@@ -35,10 +35,17 @@ Mixed-Phase Compensation references:
 	
 Required Python dependencies:
 
-    1) Python 2.7
+    1) Python 3
     2) Scientific Python: SciPy, Numpy, & Matplotlib
+    3) Soundfile
 
 The easiest install method on Windows is simply to install the continuum.io Anaconda package.
+
+Alternatively, if using PIP, simply enter:
+    
+    pip install -r requirements.txt
+
+to install all required dependencies.
 
 Measurement
 ===========
